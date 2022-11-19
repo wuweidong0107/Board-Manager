@@ -13,6 +13,9 @@ public:
 private slots:
     void on_browseBtn_clicked();
     void on_lineEdit_textChanged(QString const &arg1);
+
+private:
+    void validate();
 };
 
 #endif // ADDREPOSITORYDIALOG_H

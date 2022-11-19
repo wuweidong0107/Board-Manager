@@ -7,23 +7,23 @@
     <x>0</x>
     <y>0</y>
     <width>800</width>
-    <height>130</height>
+    <height>194</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>600</width>
+    <width>800</width>
     <height>0</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string>Add or Create Package</string>
+   <string>Add Package</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Add existing or create new package</string>
+      <string>Add an existing package</string>
      </property>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
@@ -45,6 +45,32 @@
       </item>
      </layout>
     </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_warning">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>44</height>
+      </size>
+     </property>
+    </spacer>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">
