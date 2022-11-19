@@ -68,11 +68,13 @@ public:
     MainWindow();
 
 private slots:
-
+    void onAddPackage();
+    
 private:
     void createActions();
     void createStatusBar();
     void createDockWindows();
+    void addRepository(QString const &dir = QString());
     
     QMenu *packageMenu;
     QMenu *boardMenu;

@@ -1,5 +1,6 @@
 #include <QtWidgets>
 #include "mainwindow.h"
+#include "AddRepositoryDialog.h"
 
 MainWindow::MainWindow()
 {
@@ -7,8 +8,22 @@ MainWindow::MainWindow()
     createStatusBar();
     createDockWindows();
 
+    setMinimumWidth(1280);
     setCentralWidget(boardDock);
     setWindowTitle(tr("Board-Manager"));
+}
+
+void MainWindow::addRepository(const QString &dir)
+{
+    AddRepositoryDialog dlg(this, dir);
+    if (dlg.exec() == QDialog::Accepted) {
+        
+    }
+}
+
+void MainWindow::onAddPackage()
+{
+    addRepository(QString());
 }
 
 void MainWindow::createActions()
@@ -17,8 +32,8 @@ void MainWindow::createActions()
     QAction *addPackageAct = new QAction(tr("&Add"), this);
     addPackageAct->setShortcuts(QKeySequence::Open);
     addPackageAct->setStatusTip(tr("Add a new package"));
+    connect(addPackageAct, &QAction::triggered, this, &MainWindow::onAddPackage);
     packageMenu->addAction(addPackageAct);
-
     packageMenu->addSeparator();
 
     QAction *quitAct = packageMenu->addAction(tr("&Exit"), this, &QWidget::close);
