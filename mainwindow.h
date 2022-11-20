@@ -52,6 +52,7 @@
 #define MAINWINDOW_H
 
 #include "AddRepositoryDialog.h"
+#include "RepositoryBookmark.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -59,6 +60,7 @@ class QAction;
 class QListWidget;
 class QMenu;
 class QTextEdit;
+class QTreeWidgetItem;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -66,8 +68,11 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(QWidget *parent = nullptr);
 
+    const QList<RepositoryData> &getRepos() const;
+	QList<RepositoryData> *getReposPtr();
+    
 private slots:
     void onAddPackage();
     
@@ -76,6 +81,9 @@ private:
     void createStatusBar();
     void createDockWindows();
     void addRepository(QString const &dir = QString());
+    QString makeRepositoryName(const QString &path);
+    void saveRepositoryBookmark(RepositoryData &item);
+    void updatePackageList();
     
     QMenu *packageMenu;
     QMenu *boardMenu;
@@ -86,6 +94,9 @@ private:
     QListWidget *packageList;
     QListWidget *productList;
     QListWidget *boardList;
+    
+    struct Private;
+    Private *m;
 };
 
 #endif

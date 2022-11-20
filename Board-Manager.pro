@@ -18,12 +18,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     AddRepositoryDialog.cpp \
     Git.cpp \
+    RepositoryBookmark.cpp \
     mainwindow.cpp \
     main.cpp
 
 HEADERS += \
     AddRepositoryDialog.h \
     Git.h \
+    RepositoryBookmark.h \
     mainwindow.h
 
 FORMS += \

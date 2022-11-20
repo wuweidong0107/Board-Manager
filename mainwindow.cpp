@@ -1,8 +1,19 @@
 #include <QtWidgets>
 #include "mainwindow.h"
 #include "AddRepositoryDialog.h"
+#include "Git.h"
+#include "RepositoryBookmark.h"
 
-MainWindow::MainWindow()
+static QString bookmark = "/home/wwd/.config/board-manager/bookmarks.xml";
+
+struct MainWindow::Private {
+    QList<RepositoryData> repos;
+};
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , m(new Private)
+    
 {
     createActions();
     createStatusBar();
@@ -11,19 +22,82 @@ MainWindow::MainWindow()
     setMinimumWidth(1280);
     setCentralWidget(boardDock);
     setWindowTitle(tr("Board-Manager"));
+    
+    updatePackageList();
+}
+
+const QList<RepositoryData> &MainWindow::getRepos() const
+{
+	return m->repos;
+}
+
+QList<RepositoryData> *MainWindow::getReposPtr()
+{
+	return &m->repos;
+}
+
+QString MainWindow::makeRepositoryName(const QString &path)
+{
+    qDebug()<<__func__<<path;
+    auto i = path.lastIndexOf('/');
+    if (i >= 0) {
+        i++;
+        auto j = path.size();
+        return path.mid(i, j-i);
+    }
+    return QString();
+}
+
+void MainWindow::saveRepositoryBookmark(RepositoryData &item)
+{
+    if (item.path.isEmpty() || item.name.isEmpty())
+        return;
+    
+    auto *repos = getReposPtr();
+    bool done = false;
+    for(auto &repo : *repos) {
+        RepositoryData *p = &repo;
+        if (item.path == p->path) {
+            done = true;
+            break;
+        }
+    }
+    if (!done) {     
+        repos->push_back(item);
+    }
+    RepositoryBookmark::save(bookmark, &getRepos());
+}
+
+void MainWindow::updatePackageList()
+{
+    auto *repos = getReposPtr();
+	*repos = RepositoryBookmark::load(bookmark);
+    packageList->clear();
+    
+    for(int i = 0; i < repos->size(); i++) {
+        RepositoryData const &repo = repos->at(i);
+        packageList->addItem(repo.name);
+    }
 }
 
 void MainWindow::addRepository(const QString &dir)
 {
     AddRepositoryDialog dlg(this, dir);
     if (dlg.exec() == QDialog::Accepted) {
-        
+        QString dir = dlg.path();
+        if (!Git::isValidRepo(dir))
+            return;
+        RepositoryData item;
+        item.path = dir;
+        item.name = makeRepositoryName(dir);
+        saveRepositoryBookmark(item);
     }
 }
 
 void MainWindow::onAddPackage()
 {
     addRepository(QString());
+    updatePackageList();
 }
 
 void MainWindow::createActions()
@@ -64,6 +138,7 @@ void MainWindow::createDockWindows()
             << "RK3328"
             << "RK3288");
     packageDock->setWidget(packageList);
+    packageDock->setMinimumSize(QSize(300,300));
     addDockWidget(Qt::LeftDockWidgetArea, packageDock);
     viewMenu->addAction(packageDock->toggleViewAction());
 
@@ -73,6 +148,7 @@ void MainWindow::createDockWindows()
             << "PROD_2092_DSB28"
             << "PROD_2123_MSM28");
     productDock->setWidget(productList);
+    productDock->setMinimumSize(QSize(300,300));
     addDockWidget(Qt::LeftDockWidgetArea, productDock);
     viewMenu->addAction(productDock->toggleViewAction());
     

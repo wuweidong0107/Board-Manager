@@ -10,6 +10,12 @@ AddRepositoryDialog::AddRepositoryDialog(QWidget *parent, QString const &dir)
     lineEdit->setText(dir);
 }
 
+QString AddRepositoryDialog::path() const
+{
+    QString s = lineEdit->text();
+    return s;
+}
+
 void AddRepositoryDialog::on_browseBtn_clicked()
 {
     QString dir = lineEdit->text();
