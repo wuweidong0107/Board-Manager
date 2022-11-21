@@ -8,6 +8,7 @@ static QString bookmark = "/home/wwd/.config/board-manager/bookmarks.xml";
 
 struct MainWindow::Private {
     QList<RepositoryData> repos;
+    RepositoryData current_repo;
 };
 
 MainWindow::MainWindow(QWidget *parent)
@@ -19,9 +20,13 @@ MainWindow::MainWindow(QWidget *parent)
     createStatusBar();
     createDockWindows();
 
+    QFont font;
+    font.setPointSize(11);
+    setFont(font);
     setMinimumWidth(1280);
     setCentralWidget(boardDock);
     setWindowTitle(tr("Board-Manager"));
+
     
     updatePackageList();
 }
@@ -107,18 +112,9 @@ void MainWindow::updateStatusBarText()
 	
 	QWidget *w = qApp->focusWidget();
 	if (w == packageList) {
-		QListWidgetItem *item = packageList->currentItem();
-        QList<RepositoryData> const &repos = getRepos();
-        int row;
-        if(item) {
-            row = item->data(IndexRole).toInt();
-            if (row < 0 || row >= repos.size())
-                return;
-            
-            RepositoryData const *repo = (row >= 0 && row < repos.size()) ? &repos[row] : nullptr;
-            if (repo) {
-                text = repo->path;
-            }
+        RepositoryData const *repo = repositoryItem(packageList->currentItem());
+        if (repo) {
+            text = repo->path;
         }
 	}
     statusBar()->showMessage(text);
@@ -144,6 +140,18 @@ void MainWindow::onAddPackage()
     updatePackageList();
 }
 
+RepositoryData const *MainWindow::repositoryItem(QListWidgetItem const *item) const
+{
+    if (item) {
+		int row = item->data(IndexRole).toInt();
+		if (row < 0 && row >= getRepos().size()) {
+			return nullptr;
+		}
+        QList<RepositoryData> const &repos = getRepos();
+        return (row >= 0 && row < repos.size()) ? &repos[row] : nullptr;
+	}
+    return nullptr;
+}
 
 void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
 {
@@ -166,6 +174,24 @@ void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
 void MainWindow::on_packageList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
     updateStatusBarText();
+}
+
+void MainWindow::on_packageList_itemDoubleClicked(QListWidgetItem *item)
+{
+    RepositoryData const *repo = repositoryItem(item);
+    if (repo) {
+        m->current_repo = *repo;
+        for (int i = 0; i < packageList->count(); i++) {
+            QListWidgetItem *item2 = packageList->item(i);
+            QFont font = item2->font();
+            if (item == item2) {
+                font.setBold(true);
+            } else { 
+                font.setBold(false);
+            }
+            item2->setFont(font);            
+        }
+	}
 }
 
 void MainWindow::createActions()
@@ -205,6 +231,8 @@ void MainWindow::createDockWindows()
             this, &MainWindow::on_packageList_customContextMenuRequested);
     connect(packageList, &QListWidget::currentItemChanged,
             this, &MainWindow::on_packageList_currentItemChanged);
+    connect(packageList, &QListWidget::itemDoubleClicked,
+            this, &MainWindow::on_packageList_itemDoubleClicked);
     packageDock->setWidget(packageList);
     packageDock->setMinimumSize(QSize(400, 400));
     addDockWidget(Qt::LeftDockWidgetArea, packageDock);

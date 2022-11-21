@@ -83,7 +83,7 @@ private slots:
     void onAddPackage();
     void on_packageList_customContextMenuRequested(const QPoint &pos);
     void on_packageList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
-    
+    void on_packageList_itemDoubleClicked(QListWidgetItem *item);
 private:
     void createActions();
     void createStatusBar();
@@ -95,6 +95,7 @@ private:
     int indexOfRepository(const QListWidgetItem *item) const;
     void removeRepositoryFromBookmark(int index, bool ask);
     void updateStatusBarText();
+    RepositoryData const *repositoryItem(QListWidgetItem const *item) const;
     
     QMenu *packageMenu;
     QMenu *boardMenu;
