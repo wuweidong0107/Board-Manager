@@ -61,6 +61,7 @@ class QListWidget;
 class QMenu;
 class QTextEdit;
 class QTreeWidgetItem;
+class QListWidgetItem;
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -68,6 +69,11 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
+public:
+	enum {
+		IndexRole = Qt::UserRole,
+	};
+    
     MainWindow(QWidget *parent = nullptr);
 
     const QList<RepositoryData> &getRepos() const;
@@ -75,6 +81,8 @@ public:
     
 private slots:
     void onAddPackage();
+    void on_packageList_customContextMenuRequested(const QPoint &pos);
+    void on_packageList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
     
 private:
     void createActions();
@@ -82,8 +90,11 @@ private:
     void createDockWindows();
     void addRepository(QString const &dir = QString());
     QString makeRepositoryName(const QString &path);
-    void saveRepositoryBookmark(RepositoryData &item);
+    void updateRepositoryBookmark(RepositoryData &item);
     void updatePackageList();
+    int indexOfRepository(const QListWidgetItem *item) const;
+    void removeRepositoryFromBookmark(int index, bool ask);
+    void updateStatusBarText();
     
     QMenu *packageMenu;
     QMenu *boardMenu;

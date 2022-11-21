@@ -38,7 +38,6 @@ QList<RepositoryData> *MainWindow::getReposPtr()
 
 QString MainWindow::makeRepositoryName(const QString &path)
 {
-    qDebug()<<__func__<<path;
     auto i = path.lastIndexOf('/');
     if (i >= 0) {
         i++;
@@ -48,7 +47,7 @@ QString MainWindow::makeRepositoryName(const QString &path)
     return QString();
 }
 
-void MainWindow::saveRepositoryBookmark(RepositoryData &item)
+void MainWindow::updateRepositoryBookmark(RepositoryData &item)
 {
     if (item.path.isEmpty() || item.name.isEmpty())
         return;
@@ -76,8 +75,53 @@ void MainWindow::updatePackageList()
     
     for(int i = 0; i < repos->size(); i++) {
         RepositoryData const &repo = repos->at(i);
-        packageList->addItem(repo.name);
+        QListWidgetItem *item = new QListWidgetItem();
+        item->setText(repo.name);
+        item->setData(IndexRole, i);
+        packageList->addItem(item);
     }
+}
+
+int MainWindow::indexOfRepository(const QListWidgetItem *item) const
+{
+    if (!item) return -1;
+	return item->data(IndexRole).toInt();
+}
+
+void MainWindow::removeRepositoryFromBookmark(int index, bool ask)
+{
+    if (ask) {
+		int r = QMessageBox::warning(this, tr("Confirm Remove"), tr("Are you sure you want to remove the repository from bookmarks?") + '\n' + tr("(Files will NOT be deleted)"), QMessageBox::Ok, QMessageBox::Cancel);
+		if (r != QMessageBox::Ok) return;
+	}
+	auto *repos = getReposPtr();
+	if (index >= 0 && index < repos->size()) {
+		repos->erase(repos->begin() + index);
+		updatePackageList();
+    }
+}
+
+void MainWindow::updateStatusBarText()
+{
+    QString text;
+	
+	QWidget *w = qApp->focusWidget();
+	if (w == packageList) {
+		QListWidgetItem *item = packageList->currentItem();
+        QList<RepositoryData> const &repos = getRepos();
+        int row;
+        if(item) {
+            row = item->data(IndexRole).toInt();
+            if (row < 0 || row >= repos.size())
+                return;
+            
+            RepositoryData const *repo = (row >= 0 && row < repos.size()) ? &repos[row] : nullptr;
+            if (repo) {
+                text = repo->path;
+            }
+        }
+	}
+    statusBar()->showMessage(text);
 }
 
 void MainWindow::addRepository(const QString &dir)
@@ -90,7 +134,7 @@ void MainWindow::addRepository(const QString &dir)
         RepositoryData item;
         item.path = dir;
         item.name = makeRepositoryName(dir);
-        saveRepositoryBookmark(item);
+        updateRepositoryBookmark(item);
     }
 }
 
@@ -98,6 +142,30 @@ void MainWindow::onAddPackage()
 {
     addRepository(QString());
     updatePackageList();
+}
+
+
+void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
+{
+    QListWidgetItem *item = packageList->currentItem();
+    if (!item) return;
+    
+    int index = indexOfRepository(item);
+    QMenu menu;
+    QAction *a_remove = menu.addAction(tr("&Remove"));
+    QPoint pt = packageList->mapToGlobal(pos);
+    QAction *a = menu.exec(pt);
+    if (a) {
+        if (a == a_remove) {
+            removeRepositoryFromBookmark(index, true);
+            return;
+        }
+    }
+}
+
+void MainWindow::on_packageList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
+{
+    updateStatusBarText();
 }
 
 void MainWindow::createActions()
@@ -132,23 +200,23 @@ void MainWindow::createDockWindows()
     packageDock = new QDockWidget(tr("Packages"), this);
     packageDock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
     packageList = new QListWidget(packageDock);
-    packageList->addItems(QStringList()
-            << "RK3568"
-            << "RK3566"
-            << "RK3328"
-            << "RK3288");
+    packageList->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(packageList, &QListWidget::customContextMenuRequested, 
+            this, &MainWindow::on_packageList_customContextMenuRequested);
+    connect(packageList, &QListWidget::currentItemChanged,
+            this, &MainWindow::on_packageList_currentItemChanged);
     packageDock->setWidget(packageList);
-    packageDock->setMinimumSize(QSize(300,300));
+    packageDock->setMinimumSize(QSize(400, 400));
     addDockWidget(Qt::LeftDockWidgetArea, packageDock);
     viewMenu->addAction(packageDock->toggleViewAction());
-
+    
     productDock = new QDockWidget(tr("Products"), this);
     productList = new QListWidget(productDock);
     productList->addItems(QStringList()
             << "PROD_2092_DSB28"
             << "PROD_2123_MSM28");
     productDock->setWidget(productList);
-    productDock->setMinimumSize(QSize(300,300));
+    productDock->setMinimumSize(QSize(400, 400));
     addDockWidget(Qt::LeftDockWidgetArea, productDock);
     viewMenu->addAction(productDock->toggleViewAction());
     
