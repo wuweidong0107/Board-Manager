@@ -82,6 +82,7 @@ void MainWindow::updatePackageList()
         RepositoryData const &repo = repos->at(i);
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(repo.name);
+        item->setIcon(QIcon::fromTheme("folder"));
         item->setData(IndexRole, i);
         packageList->addItem(item);
     }
@@ -184,12 +185,17 @@ void MainWindow::on_packageList_itemDoubleClicked(QListWidgetItem *item)
         for (int i = 0; i < packageList->count(); i++) {
             QListWidgetItem *item2 = packageList->item(i);
             QFont font = item2->font();
-            if (item == item2) {
+            if (item2 == item) {
                 font.setBold(true);
+                item2->setFont(font);
+                item2->setData(OpenRole, true);
+                item2->setIcon(QIcon::fromTheme("folder-open"));
             } else { 
                 font.setBold(false);
-            }
-            item2->setFont(font);            
+                item2->setFont(font);
+                item2->setData(OpenRole, false);
+                item2->setIcon(QIcon::fromTheme("folder"));     // close
+            }           
         }
 	}
 }
