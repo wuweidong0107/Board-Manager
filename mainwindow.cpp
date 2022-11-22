@@ -27,7 +27,6 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(boardDock);
     setWindowTitle(tr("Board-Manager"));
 
-    
     updatePackageList();
 }
 
@@ -77,17 +76,39 @@ void MainWindow::updatePackageList()
     auto *repos = getReposPtr();
 	*repos = RepositoryBookmark::load(bookmark);
     packageList->clear();
+    itemRepoMap.clear();
     
     for(int i = 0; i < repos->size(); i++) {
-        RepositoryData const &repo = repos->at(i);
+        const RepositoryData &repo = repos->at(i);
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(repo.name);
         item->setIcon(QIcon::fromTheme("folder"));
         item->setData(IndexRole, i);
         packageList->addItem(item);
+        itemRepoMap.insert(item, repo);
     }
 }
 
+void MainWindow::openPackage(const RepositoryData &repo)
+{
+    QListWidgetItem *last_item = itemRepoMap.key(m->current_repo);
+    if (last_item) {      
+        QFont font = last_item->font();
+        font.setBold(false);
+        last_item->setFont(font);
+        last_item->setIcon(QIcon::fromTheme("folder"));
+    }
+    
+    QListWidgetItem *item = itemRepoMap.key(repo);
+    if (item) {
+        packageList->setCurrentItem(item);
+        QFont font = item->font();
+        font.setBold(true);
+        item->setFont(font);
+        item->setIcon(QIcon::fromTheme("folder"));
+        m->current_repo = repo;
+	}
+}
 int MainWindow::indexOfRepository(const QListWidgetItem *item) const
 {
     if (!item) return -1;
@@ -121,9 +142,9 @@ void MainWindow::updateStatusBarText()
     statusBar()->showMessage(text);
 }
 
-void MainWindow::addRepository(const QString &dir)
+void MainWindow::onAddPackage()
 {
-    AddRepositoryDialog dlg(this, dir);
+    AddRepositoryDialog dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
         QString dir = dlg.path();
         if (!Git::isValidRepo(dir))
@@ -132,23 +153,19 @@ void MainWindow::addRepository(const QString &dir)
         item.path = dir;
         item.name = makeRepositoryName(dir);
         updateRepositoryBookmark(item);
+        updatePackageList();
+        openPackage(item);
     }
 }
 
-void MainWindow::onAddPackage()
-{
-    addRepository(QString());
-    updatePackageList();
-}
-
-RepositoryData const *MainWindow::repositoryItem(QListWidgetItem const *item) const
+const RepositoryData *MainWindow::repositoryItem(const QListWidgetItem *item) const
 {
     if (item) {
 		int row = item->data(IndexRole).toInt();
 		if (row < 0 && row >= getRepos().size()) {
 			return nullptr;
 		}
-        QList<RepositoryData> const &repos = getRepos();
+        const QList<RepositoryData> &repos = getRepos();
         return (row >= 0 && row < repos.size()) ? &repos[row] : nullptr;
 	}
     return nullptr;
@@ -159,14 +176,14 @@ void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
     QListWidgetItem *item = packageList->currentItem();
     if (!item) return;
     
-    int index = indexOfRepository(item);
+    const RepositoryData repo = itemRepoMap.value(item);
     QMenu menu;
-    QAction *a_remove = menu.addAction(tr("&Remove"));
     QPoint pt = packageList->mapToGlobal(pos);
-    QAction *a = menu.exec(pt);
+    QAction *a_open = menu.addAction(tr("&Open"));
+    QAction *a = menu.exec(pt + QPoint(8, -8));
     if (a) {
-        if (a == a_remove) {
-            removeRepositoryFromBookmark(index, true);
+        if (a == a_open) {
+            openPackage(repo);
             return;
         }
     }
@@ -179,25 +196,7 @@ void MainWindow::on_packageList_currentItemChanged(QListWidgetItem *current, QLi
 
 void MainWindow::on_packageList_itemDoubleClicked(QListWidgetItem *item)
 {
-    RepositoryData const *repo = repositoryItem(item);
-    if (repo) {
-        m->current_repo = *repo;
-        for (int i = 0; i < packageList->count(); i++) {
-            QListWidgetItem *item2 = packageList->item(i);
-            QFont font = item2->font();
-            if (item2 == item) {
-                font.setBold(true);
-                item2->setFont(font);
-                item2->setData(OpenRole, true);
-                item2->setIcon(QIcon::fromTheme("folder-open"));
-            } else { 
-                font.setBold(false);
-                item2->setFont(font);
-                item2->setData(OpenRole, false);
-                item2->setIcon(QIcon::fromTheme("folder"));     // close
-            }           
-        }
-	}
+    openPackage(itemRepoMap.value(item));
 }
 
 void MainWindow::createActions()

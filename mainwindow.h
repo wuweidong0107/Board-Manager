@@ -22,7 +22,6 @@ public:
 public:
 	enum {
 		IndexRole = Qt::UserRole,
-        OpenRole,
 	};
     
     MainWindow(QWidget *parent = nullptr);
@@ -39,14 +38,14 @@ private:
     void createActions();
     void createStatusBar();
     void createDockWindows();
-    void addRepository(QString const &dir = QString());
     QString makeRepositoryName(const QString &path);
     void updateRepositoryBookmark(RepositoryData &item);
     void updatePackageList();
+    void openPackage(const RepositoryData &repo);
     int indexOfRepository(const QListWidgetItem *item) const;
     void removeRepositoryFromBookmark(int index, bool ask);
     void updateStatusBarText();
-    RepositoryData const *repositoryItem(QListWidgetItem const *item) const;
+    RepositoryData const *repositoryItem(const QListWidgetItem *item) const;
     
     QMenu *packageMenu;
     QMenu *boardMenu;
@@ -57,6 +56,7 @@ private:
     QListWidget *packageList;
     QListWidget *productList;
     QListWidget *boardList;
+    QMap<QListWidgetItem *,RepositoryData> itemRepoMap;
     
     struct Private;
     Private *m;

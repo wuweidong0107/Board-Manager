@@ -76,7 +76,6 @@ bool RepositoryBookmark::save(const QString &path, const QList<RepositoryData> *
         }
         writer.writeEndElement();
         writer.writeEndElement();
-        qDebug()<<__func__<<"OK";
         return true;
     }
     return false;
