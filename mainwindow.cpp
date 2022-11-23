@@ -51,23 +51,34 @@ QString MainWindow::makeRepositoryName(const QString &path)
     return QString();
 }
 
-void MainWindow::updateRepositoryBookmark(RepositoryData &item)
+void MainWindow::addRepositoryToBookmark(const RepositoryData &repo)
 {
-    if (item.path.isEmpty() || item.name.isEmpty())
+    if (repo.path.isEmpty() || repo.name.isEmpty())
         return;
     
     auto *repos = getReposPtr();
-    bool done = false;
-    for(auto &repo : *repos) {
-        RepositoryData *p = &repo;
-        if (item.path == p->path) {
-            done = true;
+    bool found = false;
+    for(auto &i : *repos) {
+        RepositoryData *p = &i;
+        if (repo.path == p->path) {
+            found = true;
             break;
         }
     }
-    if (!done) {     
-        repos->push_back(item);
+    if (!found) {     
+        repos->push_back(repo);
     }
+    RepositoryBookmark::save(bookmark, &getRepos());
+}
+
+void MainWindow::removeRepositoryFromBookmark(const RepositoryData &repo, bool ask)
+{
+    if (ask) {
+		int r = QMessageBox::warning(this, tr("Confirm Remove"), tr("Are you sure you want to remove the repository from bookmarks?") + '\n' + tr("(Files will NOT be deleted)"), QMessageBox::Ok, QMessageBox::Cancel);
+		if (r != QMessageBox::Ok) return;
+	}
+	auto *repos = getReposPtr();
+    repos->removeAll(repo);   
     RepositoryBookmark::save(bookmark, &getRepos());
 }
 
@@ -83,7 +94,6 @@ void MainWindow::updatePackageList()
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(repo.name);
         item->setIcon(QIcon::fromTheme("folder"));
-        item->setData(IndexRole, i);
         packageList->addItem(item);
         itemRepoMap.insert(item, repo);
     }
@@ -109,24 +119,6 @@ void MainWindow::openPackage(const RepositoryData &repo)
         m->current_repo = repo;
 	}
 }
-int MainWindow::indexOfRepository(const QListWidgetItem *item) const
-{
-    if (!item) return -1;
-	return item->data(IndexRole).toInt();
-}
-
-void MainWindow::removeRepositoryFromBookmark(int index, bool ask)
-{
-    if (ask) {
-		int r = QMessageBox::warning(this, tr("Confirm Remove"), tr("Are you sure you want to remove the repository from bookmarks?") + '\n' + tr("(Files will NOT be deleted)"), QMessageBox::Ok, QMessageBox::Cancel);
-		if (r != QMessageBox::Ok) return;
-	}
-	auto *repos = getReposPtr();
-	if (index >= 0 && index < repos->size()) {
-		repos->erase(repos->begin() + index);
-		updatePackageList();
-    }
-}
 
 void MainWindow::updateStatusBarText()
 {
@@ -134,10 +126,8 @@ void MainWindow::updateStatusBarText()
 	
 	QWidget *w = qApp->focusWidget();
 	if (w == packageList) {
-        RepositoryData const *repo = repositoryItem(packageList->currentItem());
-        if (repo) {
-            text = repo->path;
-        }
+        const RepositoryData &repo = itemRepoMap.value(packageList->currentItem());
+        text = repo.path;
 	}
     statusBar()->showMessage(text);
 }
@@ -152,23 +142,10 @@ void MainWindow::onAddPackage()
         RepositoryData item;
         item.path = dir;
         item.name = makeRepositoryName(dir);
-        updateRepositoryBookmark(item);
+        addRepositoryToBookmark(item);
         updatePackageList();
         openPackage(item);
     }
-}
-
-const RepositoryData *MainWindow::repositoryItem(const QListWidgetItem *item) const
-{
-    if (item) {
-		int row = item->data(IndexRole).toInt();
-		if (row < 0 && row >= getRepos().size()) {
-			return nullptr;
-		}
-        const QList<RepositoryData> &repos = getRepos();
-        return (row >= 0 && row < repos.size()) ? &repos[row] : nullptr;
-	}
-    return nullptr;
 }
 
 void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
@@ -180,10 +157,18 @@ void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
     QMenu menu;
     QPoint pt = packageList->mapToGlobal(pos);
     QAction *a_open = menu.addAction(tr("&Open"));
+    QAction *a_remove = menu.addAction(tr("&Remove"));
     QAction *a = menu.exec(pt + QPoint(8, -8));
     if (a) {
         if (a == a_open) {
             openPackage(repo);
+            return;
+        }
+        if (a == a_remove) {
+            removeRepositoryFromBookmark(repo, true);
+            updatePackageList();
+            if (repo != m->current_repo)
+                openPackage(m->current_repo);
             return;
         }
     }
@@ -191,6 +176,8 @@ void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
 
 void MainWindow::on_packageList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous)
 {
+    Q_UNUSED(current);
+    Q_UNUSED(previous);
     updateStatusBarText();
 }
 

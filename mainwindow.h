@@ -19,11 +19,6 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-public:
-	enum {
-		IndexRole = Qt::UserRole,
-	};
-    
     MainWindow(QWidget *parent = nullptr);
 
     const QList<RepositoryData> &getRepos() const;
@@ -39,14 +34,12 @@ private:
     void createStatusBar();
     void createDockWindows();
     QString makeRepositoryName(const QString &path);
-    void updateRepositoryBookmark(RepositoryData &item);
+    void addRepositoryToBookmark(const RepositoryData &repo);
+    void removeRepositoryFromBookmark(const RepositoryData &repo, bool ask);
     void updatePackageList();
     void openPackage(const RepositoryData &repo);
-    int indexOfRepository(const QListWidgetItem *item) const;
-    void removeRepositoryFromBookmark(int index, bool ask);
     void updateStatusBarText();
-    RepositoryData const *repositoryItem(const QListWidgetItem *item) const;
-    
+
     QMenu *packageMenu;
     QMenu *boardMenu;
     QMenu *viewMenu;

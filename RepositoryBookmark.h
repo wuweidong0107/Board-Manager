@@ -9,6 +9,9 @@ struct RepositoryData {
     bool operator==(const RepositoryData& other) const {
         return name == other.name && path == other.path;
     }
+    bool operator!=(const RepositoryData& other) const {
+        return name != other.name || path == other.path;
+    }
 };
 Q_DECLARE_METATYPE(RepositoryData);
 
