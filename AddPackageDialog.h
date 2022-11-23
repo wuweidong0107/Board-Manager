@@ -4,11 +4,11 @@
 #include <QDialog>
 #include "ui_AddRepositoryDialog.h"
 
-class AddRepositoryDialog : public QDialog, public Ui::AddRepositoryDialog
+class AddPackageDialog : public QDialog, public Ui::AddRepositoryDialog
 {
     Q_OBJECT
 public:
-    AddRepositoryDialog(QWidget *parent = 0, QString const &dir = QString());
+    AddPackageDialog(QWidget *parent = 0, QString const &dir = QString());
     QString path() const;
 
 private slots:

@@ -1,6 +1,6 @@
 #include <QtWidgets>
 #include "mainwindow.h"
-#include "AddRepositoryDialog.h"
+#include "AddPackageDialog.h"
 #include "Git.h"
 #include "RepositoryBookmark.h"
 
@@ -99,6 +99,16 @@ void MainWindow::updatePackageList()
     }
 }
 
+void MainWindow::updateProductList(GitPtr g)
+{
+    productList->clear();
+    QList<Git::Branch> branches = g->branches();
+    for (const Git::Branch &b : branches) {
+        QListWidgetItem *item = new QListWidgetItem();
+        item->setText(b.name);
+		productList->addItem(item);
+	}
+}
 void MainWindow::openPackage(const RepositoryData &repo)
 {
     QListWidgetItem *last_item = itemRepoMap.key(m->current_repo);
@@ -118,6 +128,9 @@ void MainWindow::openPackage(const RepositoryData &repo)
         item->setIcon(QIcon::fromTheme("folder"));
         m->current_repo = repo;
 	}
+    
+    GitPtr g = git(repo.path);
+    updateProductList(g);
 }
 
 void MainWindow::updateStatusBarText()
@@ -132,9 +145,19 @@ void MainWindow::updateStatusBarText()
     statusBar()->showMessage(text);
 }
 
+GitPtr MainWindow::git(const QString &dir) const
+{
+    GitPtr g = std::make_shared<Git>(dir);
+    if (g && QFileInfo(g->gitCommand()).isExecutable()) {
+		return g;
+	} else {
+		return GitPtr();
+	}
+}
+
 void MainWindow::onAddPackage()
 {
-    AddRepositoryDialog dlg(this);
+    AddPackageDialog dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
         QString dir = dlg.path();
         if (!Git::isValidRepo(dir))
@@ -232,9 +255,6 @@ void MainWindow::createDockWindows()
     
     productDock = new QDockWidget(tr("Products"), this);
     productList = new QListWidget(productDock);
-    productList->addItems(QStringList()
-            << "PROD_2092_DSB28"
-            << "PROD_2123_MSM28");
     productDock->setWidget(productList);
     productDock->setMinimumSize(QSize(400, 400));
     addDockWidget(Qt::LeftDockWidgetArea, productDock);

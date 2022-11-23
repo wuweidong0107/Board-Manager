@@ -16,20 +16,20 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    AddRepositoryDialog.cpp \
+    AddPackageDialog.cpp \
     Git.cpp \
     RepositoryBookmark.cpp \
     mainwindow.cpp \
     main.cpp
 
 HEADERS += \
-    AddRepositoryDialog.h \
+    AddPackageDialog.h \
     Git.h \
     RepositoryBookmark.h \
     mainwindow.h
 
 FORMS += \
-    AddRepositoryDialog.ui
+    AddPackageDialog.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

@@ -1,8 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "AddRepositoryDialog.h"
+#include "AddPackageDialog.h"
 #include "RepositoryBookmark.h"
+#include "Git.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -38,7 +39,9 @@ private:
     void removeRepositoryFromBookmark(const RepositoryData &repo, bool ask);
     void updatePackageList();
     void openPackage(const RepositoryData &repo);
+    void updateProductList(GitPtr g);
     void updateStatusBarText();
+    GitPtr git(const QString &dir) const;
 
     QMenu *packageMenu;
     QMenu *boardMenu;
@@ -50,7 +53,6 @@ private:
     QListWidget *productList;
     QListWidget *boardList;
     QMap<QListWidgetItem *,RepositoryData> itemRepoMap;
-    
     struct Private;
     Private *m;
 };

@@ -1,22 +1,22 @@
 #include "Git.h"
 #include <QFileDialog>
 #include <QDebug>
-#include "AddRepositoryDialog.h"
+#include "AddPackageDialog.h"
 
-AddRepositoryDialog::AddRepositoryDialog(QWidget *parent, QString const &dir)
+AddPackageDialog::AddPackageDialog(QWidget *parent, QString const &dir)
     : QDialog(parent)
 {
     setupUi(this);
     lineEdit->setText(dir);
 }
 
-QString AddRepositoryDialog::path() const
+QString AddPackageDialog::path() const
 {
     QString s = lineEdit->text();
     return s;
 }
 
-void AddRepositoryDialog::on_browseBtn_clicked()
+void AddPackageDialog::on_browseBtn_clicked()
 {
     QString dir = lineEdit->text();
     if (dir.isEmpty()) {
@@ -28,13 +28,13 @@ void AddRepositoryDialog::on_browseBtn_clicked()
     }
 }
 
-void AddRepositoryDialog::on_lineEdit_textChanged(const QString &arg1)
+void AddPackageDialog::on_lineEdit_textChanged(const QString &arg1)
 {
     Q_UNUSED(arg1);
     validate();
 }
 
-void AddRepositoryDialog::validate()
+void AddPackageDialog::validate()
 {
     QString path = lineEdit->text();
     QString text;
