@@ -102,13 +102,14 @@ void MainWindow::updatePackageList()
 void MainWindow::updateProductList(GitPtr g)
 {
     productList->clear();
-    QList<Git::Branch> branches = g->branches();
+    QList<Git::Branch> branches = g->localBranches();
     for (const Git::Branch &b : branches) {
         QListWidgetItem *item = new QListWidgetItem();
         item->setText(b.name);
 		productList->addItem(item);
 	}
 }
+
 void MainWindow::openPackage(const RepositoryData &repo)
 {
     QListWidgetItem *last_item = itemRepoMap.key(m->current_repo);

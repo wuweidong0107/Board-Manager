@@ -13,6 +13,8 @@ class Git : public QObject
         QString git_command;
         QString ssh_command;
         QString working_repo_dir;
+        QByteArray result;
+        int process_exit_code = 0;
     };
 private:
 	Private m;
@@ -22,9 +24,13 @@ public:
     };
     
     Git(const QString &repodir);
-    void setGitCommand(QString const &gitcmd, const QString &sshcmd = {});
+    void setGitCommand(const QString &gitcmd, const QString &sshcmd = {});
 	QString gitCommand() const;
-    QList<Branch> branches();
+    bool git(const QString &arg, bool chdir = true);
+    bool chdirExec(std::function<bool()> fn);
+    void clearResult();
+    QString gitResult();
+    QList<Branch> localBranches();
     
 signals:
 public:
