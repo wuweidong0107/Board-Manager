@@ -103,14 +103,15 @@ void MainWindow::updatePackageList()
 
 void MainWindow::openPackage(const RepositoryData &repo)
 {   
-    if (m->current_repo != repo) {
-        QListWidgetItem *last_item = itemRepoMap.key(m->current_repo);
-        if (last_item) {      
-            QFont font = last_item->font();
-            font.setBold(false);
-            last_item->setFont(font);
-            last_item->setIcon(QIcon::fromTheme("folder"));
-        }
+    if (m->current_repo == repo)
+        return;
+
+    QListWidgetItem *last_item = itemRepoMap.key(m->current_repo);
+    if (last_item) {      
+        QFont font = last_item->font();
+        font.setBold(false);
+        last_item->setFont(font);
+        last_item->setIcon(QIcon::fromTheme("folder"));
     }
     
     QListWidgetItem *item = itemRepoMap.key(repo);
@@ -141,22 +142,24 @@ void MainWindow::updateProductList(GitPtr g)
             item->setIcon(QIcon::fromTheme("folder"));
             productList->addItem(item);
             itemBranchMap.insert(item, b);
-            if (b.is_current)
-                m->current_branch = b;
+            if (b.is_current) {
+                openProduct(b);
+            }
         }
     }
 }
 
 void MainWindow::openProduct(const Git::Branch &b)
 {
-    if (m->current_branch != b) {
-        QListWidgetItem *last_item = itemBranchMap.key(m->current_branch);
-        if (last_item) {      
-            QFont font = last_item->font();
-            font.setBold(false);
-            last_item->setFont(font);
-            last_item->setIcon(QIcon::fromTheme("folder"));
-        }
+    if (m->current_branch == b)
+        return;
+
+    QListWidgetItem *last_item = itemBranchMap.key(m->current_branch);
+    if (last_item) {      
+        QFont font = last_item->font();
+        font.setBold(false);
+        last_item->setFont(font);
+        last_item->setIcon(QIcon::fromTheme("folder"));
     }
     
     QListWidgetItem *item = itemBranchMap.key(b);
@@ -229,8 +232,8 @@ void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
         if (a == a_remove) {
             if (removeRepositoryFromBookmark(repo, true) == false)
                 return;
-            updatePackageList();
             updateProductList(nullptr); // clear prodcut list
+            updatePackageList();
             openPackage(m->current_repo);
             return;
         }
