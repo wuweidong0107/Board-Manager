@@ -213,6 +213,16 @@ void MainWindow::onAddPackage()
     }
 }
 
+void MainWindow::openExplorer(const RepositoryData &repo)
+{
+    QString dir = repo.path;
+    if (QFileInfo(dir).isDir()) {
+        QString scheme = "file://";
+        QString url = scheme + dir;
+        QDesktopServices::openUrl(url);
+    }
+}
+
 void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
 {
     QListWidgetItem *item = packageList->currentItem();
@@ -222,11 +232,16 @@ void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
     QMenu menu;
     QPoint pt = packageList->mapToGlobal(pos);
     QAction *a_open = menu.addAction(tr("&Open"));
+    QAction *a_open_folder = menu.addAction(tr("Open &Folder"));
     QAction *a_remove = menu.addAction(tr("&Remove"));
     QAction *a = menu.exec(pt + QPoint(8, -8));
     if (a) {
         if (a == a_open) {
             openPackage(repo);
+            return;
+        }
+        if (a == a_open_folder) {
+            openExplorer(repo);
             return;
         }
         if (a == a_remove) {

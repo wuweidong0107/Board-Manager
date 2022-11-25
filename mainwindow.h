@@ -40,6 +40,7 @@ private:
     bool removeRepositoryFromBookmark(const RepositoryData &repo, bool ask);
     void updatePackageList();
     void openPackage(const RepositoryData &repo);
+    void openExplorer(const RepositoryData &repo);
     void updateProductList(GitPtr g);
     void openProduct(const Git::Branch &b);
     void updateStatusBarText();
