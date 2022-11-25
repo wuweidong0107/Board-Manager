@@ -38,6 +38,7 @@ public:
     void clearResult();
     QString gitResult();
     QList<Branch> localBranches();
+    void checkoutBranch(const QString &name);
     
 signals:
 public:

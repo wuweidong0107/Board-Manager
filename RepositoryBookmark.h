@@ -2,7 +2,7 @@
 #define REPOSITORYBOOKMARK_H
 
 #include <QMetaType>
-
+#include <QDebug>
 struct RepositoryData {
 	QString name;
 	QString path;
@@ -10,7 +10,7 @@ struct RepositoryData {
         return name == other.name && path == other.path;
     }
     bool operator!=(const RepositoryData& other) const {
-        return name != other.name || path == other.path;
+        return name != other.name || path != other.path;
     }
 };
 Q_DECLARE_METATYPE(RepositoryData);

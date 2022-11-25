@@ -32,7 +32,6 @@ bool Git::chdirExec(std::function<bool()> fn)
     bool res = false;
     QDir cwd = QDir::current();
     if (QDir::setCurrent(m.working_repo_dir)) {
-        qDebug() << "Dir: " << m.working_repo_dir;
         res = fn();
         QDir::setCurrent(cwd.path());
     }
@@ -109,7 +108,6 @@ QList<Git::Branch> Git::localBranches()
     QStringList list = result.split("\n");
     for (const auto &i : list) {
         if (!i.isEmpty()) {
-            qDebug()<<i;
             Branch b;
             b.is_current = i.startsWith("*") ? true:false;
             b.name = i.mid(2);
@@ -117,4 +115,9 @@ QList<Git::Branch> Git::localBranches()
         }
     }
     return branches;
+}
+
+void Git::checkoutBranch(const QString &name)
+{
+    git("checkout " + name);
 }

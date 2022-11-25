@@ -72,15 +72,16 @@ void MainWindow::addRepositoryToBookmark(const RepositoryData &repo)
     RepositoryBookmark::save(bookmark, &getRepos());
 }
 
-void MainWindow::removeRepositoryFromBookmark(const RepositoryData &repo, bool ask)
+bool MainWindow::removeRepositoryFromBookmark(const RepositoryData &repo, bool ask)
 {
     if (ask) {
-		int r = QMessageBox::warning(this, tr("Confirm Remove"), tr("Are you sure you want to remove the repository from bookmarks?") + '\n' + tr("(Files will NOT be deleted)"), QMessageBox::Ok, QMessageBox::Cancel);
-		if (r != QMessageBox::Ok) return;
+		int r = QMessageBox::warning(this, tr("Confirm Remove"), tr("Are you sure you want to remove this package ?") + '\n' + tr("(Files will NOT be deleted)"), QMessageBox::Ok, QMessageBox::Cancel);
+		if (r != QMessageBox::Ok) return false;
 	}
 	auto *repos = getReposPtr();
     repos->removeAll(repo);   
     RepositoryBookmark::save(bookmark, &getRepos());
+    return true;
 }
 
 void MainWindow::updatePackageList()
@@ -101,13 +102,15 @@ void MainWindow::updatePackageList()
 }
 
 void MainWindow::openPackage(const RepositoryData &repo)
-{
-    QListWidgetItem *last_item = itemRepoMap.key(m->current_repo);
-    if (last_item) {      
-        QFont font = last_item->font();
-        font.setBold(false);
-        last_item->setFont(font);
-        last_item->setIcon(QIcon::fromTheme("folder"));
+{   
+    if (m->current_repo != repo) {
+        QListWidgetItem *last_item = itemRepoMap.key(m->current_repo);
+        if (last_item) {      
+            QFont font = last_item->font();
+            font.setBold(false);
+            last_item->setFont(font);
+            last_item->setIcon(QIcon::fromTheme("folder"));
+        }
     }
     
     QListWidgetItem *item = itemRepoMap.key(repo);
@@ -130,26 +133,30 @@ void MainWindow::updateProductList(GitPtr g)
     productList->clear();
     itemBranchMap.clear();
     
-    QList<Git::Branch> branches = g->localBranches();
-    for (const Git::Branch &b : branches) {
-        QListWidgetItem *item = new QListWidgetItem();
-        item->setText(b.name);
-        item->setIcon(QIcon::fromTheme("folder"));
-		productList->addItem(item);
-        itemBranchMap.insert(item, b);
-        if (b.is_current)
-            m->current_branch = b;
-	}
+    if (g != nullptr) {
+        QList<Git::Branch> branches = g->localBranches();
+        for (const Git::Branch &b : branches) {
+            QListWidgetItem *item = new QListWidgetItem();
+            item->setText(b.name);
+            item->setIcon(QIcon::fromTheme("folder"));
+            productList->addItem(item);
+            itemBranchMap.insert(item, b);
+            if (b.is_current)
+                m->current_branch = b;
+        }
+    }
 }
 
 void MainWindow::openProduct(const Git::Branch &b)
 {
-    QListWidgetItem *last_item = itemBranchMap.key(m->current_branch);
-    if (last_item) {      
-        QFont font = last_item->font();
-        font.setBold(false);
-        last_item->setFont(font);
-        last_item->setIcon(QIcon::fromTheme("folder"));
+    if (m->current_branch != b) {
+        QListWidgetItem *last_item = itemBranchMap.key(m->current_branch);
+        if (last_item) {      
+            QFont font = last_item->font();
+            font.setBold(false);
+            last_item->setFont(font);
+            last_item->setIcon(QIcon::fromTheme("folder"));
+        }
     }
     
     QListWidgetItem *item = itemBranchMap.key(b);
@@ -161,7 +168,8 @@ void MainWindow::openProduct(const Git::Branch &b)
         item->setIcon(QIcon::fromTheme("folder-open"));
         m->current_branch = b;
 	}
-
+    GitPtr g = git(m->current_repo.path);
+    g->checkoutBranch(b.name);
 }
 
 void MainWindow::updateStatusBarText()
@@ -219,10 +227,11 @@ void MainWindow::on_packageList_customContextMenuRequested(const QPoint &pos)
             return;
         }
         if (a == a_remove) {
-            removeRepositoryFromBookmark(repo, true);
+            if (removeRepositoryFromBookmark(repo, true) == false)
+                return;
             updatePackageList();
-            if (repo != m->current_repo)
-                openPackage(m->current_repo);
+            updateProductList(nullptr); // clear prodcut list
+            openPackage(m->current_repo);
             return;
         }
     }
@@ -238,6 +247,11 @@ void MainWindow::on_packageList_currentItemChanged(QListWidgetItem *current, QLi
 void MainWindow::on_packageList_itemDoubleClicked(QListWidgetItem *item)
 {
     openPackage(itemRepoMap.value(item));
+}
+
+void MainWindow::on_productList_itemDoubleClicked(QListWidgetItem *item)
+{
+    openProduct(itemBranchMap.value(item));
 }
 
 void MainWindow::createActions()
@@ -286,6 +300,8 @@ void MainWindow::createDockWindows()
     
     productDock = new QDockWidget(tr("Products"), this);
     productList = new QListWidget(productDock);
+    connect(productList, &QListWidget::itemDoubleClicked,
+            this, &MainWindow::on_productList_itemDoubleClicked);
     productDock->setWidget(productList);
     productDock->setMinimumSize(QSize(400, 400));
     addDockWidget(Qt::LeftDockWidgetArea, productDock);

@@ -30,13 +30,14 @@ private slots:
     void on_packageList_customContextMenuRequested(const QPoint &pos);
     void on_packageList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
     void on_packageList_itemDoubleClicked(QListWidgetItem *item);
+    void on_productList_itemDoubleClicked(QListWidgetItem *item);
 private:
     void createActions();
     void createStatusBar();
     void createDockWindows();
     QString makeRepositoryName(const QString &path);
     void addRepositoryToBookmark(const RepositoryData &repo);
-    void removeRepositoryFromBookmark(const RepositoryData &repo, bool ask);
+    bool removeRepositoryFromBookmark(const RepositoryData &repo, bool ask);
     void updatePackageList();
     void openPackage(const RepositoryData &repo);
     void updateProductList(GitPtr g);
