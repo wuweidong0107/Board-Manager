@@ -9,6 +9,7 @@ static QString bookmark = "/home/wwd/.config/board-manager/bookmarks.xml";
 struct MainWindow::Private {
     QList<RepositoryData> repos;
     RepositoryData current_repo;
+    Git::Branch current_branch;
 };
 
 MainWindow::MainWindow(QWidget *parent)
@@ -99,17 +100,6 @@ void MainWindow::updatePackageList()
     }
 }
 
-void MainWindow::updateProductList(GitPtr g)
-{
-    productList->clear();
-    QList<Git::Branch> branches = g->localBranches();
-    for (const Git::Branch &b : branches) {
-        QListWidgetItem *item = new QListWidgetItem();
-        item->setText(b.name);
-		productList->addItem(item);
-	}
-}
-
 void MainWindow::openPackage(const RepositoryData &repo)
 {
     QListWidgetItem *last_item = itemRepoMap.key(m->current_repo);
@@ -126,12 +116,52 @@ void MainWindow::openPackage(const RepositoryData &repo)
         QFont font = item->font();
         font.setBold(true);
         item->setFont(font);
-        item->setIcon(QIcon::fromTheme("folder"));
+        item->setIcon(QIcon::fromTheme("folder-open"));
         m->current_repo = repo;
 	}
     
     GitPtr g = git(repo.path);
     updateProductList(g);
+    openProduct(m->current_branch);
+}
+
+void MainWindow::updateProductList(GitPtr g)
+{
+    productList->clear();
+    itemBranchMap.clear();
+    
+    QList<Git::Branch> branches = g->localBranches();
+    for (const Git::Branch &b : branches) {
+        QListWidgetItem *item = new QListWidgetItem();
+        item->setText(b.name);
+        item->setIcon(QIcon::fromTheme("folder"));
+		productList->addItem(item);
+        itemBranchMap.insert(item, b);
+        if (b.is_current)
+            m->current_branch = b;
+	}
+}
+
+void MainWindow::openProduct(const Git::Branch &b)
+{
+    QListWidgetItem *last_item = itemBranchMap.key(m->current_branch);
+    if (last_item) {      
+        QFont font = last_item->font();
+        font.setBold(false);
+        last_item->setFont(font);
+        last_item->setIcon(QIcon::fromTheme("folder"));
+    }
+    
+    QListWidgetItem *item = itemBranchMap.key(b);
+    if (item) {
+        productList->setCurrentItem(item);
+        QFont font = item->font();
+        font.setBold(true);
+        item->setFont(font);
+        item->setIcon(QIcon::fromTheme("folder-open"));
+        m->current_branch = b;
+	}
+
 }
 
 void MainWindow::updateStatusBarText()

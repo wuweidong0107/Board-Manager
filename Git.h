@@ -21,6 +21,13 @@ private:
 public:
     struct Branch {
 		QString name;
+        bool is_current;
+        bool operator==(const Branch& other) const {
+            return name == other.name;
+        }
+        bool operator!=(const Branch& other) const {
+            return name != other.name;
+        }
     };
     
     Git(const QString &repodir);

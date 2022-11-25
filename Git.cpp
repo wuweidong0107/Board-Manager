@@ -106,9 +106,15 @@ QList<Git::Branch> Git::localBranches()
 #ifndef QT_NO_DEBUG
     qDebug() << "result: " << result;
 #endif
-    
-    Branch b;
-    b.name = "MyBranch";
-    branches.push_back(b);
+    QStringList list = result.split("\n");
+    for (const auto &i : list) {
+        if (!i.isEmpty()) {
+            qDebug()<<i;
+            Branch b;
+            b.is_current = i.startsWith("*") ? true:false;
+            b.name = i.mid(2);
+            branches.push_back(b);            
+        }
+    }
     return branches;
 }

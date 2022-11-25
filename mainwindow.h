@@ -40,6 +40,7 @@ private:
     void updatePackageList();
     void openPackage(const RepositoryData &repo);
     void updateProductList(GitPtr g);
+    void openProduct(const Git::Branch &b);
     void updateStatusBarText();
     GitPtr git(const QString &dir) const;
 
@@ -52,7 +53,8 @@ private:
     QListWidget *packageList;
     QListWidget *productList;
     QListWidget *boardList;
-    QMap<QListWidgetItem *,RepositoryData> itemRepoMap;
+    QMap<QListWidgetItem *, RepositoryData> itemRepoMap;
+    QMap<QListWidgetItem *, Git::Branch> itemBranchMap;
     struct Private;
     Private *m;
 };
