@@ -1,6 +1,7 @@
 #include <QtWidgets>
 #include "mainwindow.h"
 #include "AddPackageDialog.h"
+#include "AddBoardDialog.h"
 #include "Git.h"
 #include "RepositoryBookmark.h"
 
@@ -197,7 +198,7 @@ GitPtr MainWindow::git(const QString &dir) const
 	}
 }
 
-void MainWindow::onAddPackage()
+void MainWindow::on_addPackage()
 {
     AddPackageDialog dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
@@ -210,6 +211,14 @@ void MainWindow::onAddPackage()
         addRepositoryToBookmark(item);
         updatePackageList();
         openPackage(item);
+    }
+}
+
+void MainWindow::on_addBoard()
+{
+    AddBoardDialog dlg(this);
+    if (dlg.exec() == QDialog::Accepted) {
+        qDebug()<<__func__;
     }
 }
 
@@ -278,7 +287,7 @@ void MainWindow::createActions()
     QAction *addPackageAct = new QAction(tr("&Add"), this);
     addPackageAct->setShortcuts(QKeySequence::Open);
     addPackageAct->setStatusTip(tr("Add a new package"));
-    connect(addPackageAct, &QAction::triggered, this, &MainWindow::onAddPackage);
+    connect(addPackageAct, &QAction::triggered, this, &MainWindow::on_addPackage);
     packageMenu->addAction(addPackageAct);
     packageMenu->addSeparator();
 
@@ -289,6 +298,7 @@ void MainWindow::createActions()
     boardMenu = menuBar()->addMenu(tr("&Board"));
     QAction *addBoardAct = new QAction(tr("&Add"), this);
     addBoardAct->setStatusTip(tr("Add a new board"));
+    connect(addBoardAct, &QAction::triggered, this, &MainWindow::on_addBoard);  
     boardMenu->addAction(addBoardAct);
 
     viewMenu = menuBar()->addMenu(tr("&View"));

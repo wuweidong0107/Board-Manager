@@ -26,7 +26,8 @@ public:
 	QList<RepositoryData> *getReposPtr();
     
 private slots:
-    void onAddPackage();
+    void on_addPackage();
+    void on_addBoard();
     void on_packageList_customContextMenuRequested(const QPoint &pos);
     void on_packageList_currentItemChanged(QListWidgetItem *current, QListWidgetItem *previous);
     void on_packageList_itemDoubleClicked(QListWidgetItem *item);

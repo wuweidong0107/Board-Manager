@@ -16,6 +16,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    AddBoardDdialog.cpp \
     AddPackageDialog.cpp \
     Git.cpp \
     RepositoryBookmark.cpp \
@@ -23,12 +24,14 @@ SOURCES += \
     main.cpp
 
 HEADERS += \
+    AddBoardDialog.h \
     AddPackageDialog.h \
     Git.h \
     RepositoryBookmark.h \
     mainwindow.h
 
 FORMS += \
+    AddBoardDialog.ui \
     AddPackageDialog.ui
 
 # Default rules for deployment.
