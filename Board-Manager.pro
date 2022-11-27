@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -18,16 +18,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     AddBoardDdialog.cpp \
     AddPackageDialog.cpp \
+    Device.cpp \
+    DeviceBroadcaster.cpp \
     Git.cpp \
     RepositoryBookmark.cpp \
+    Settings.cpp \
     mainwindow.cpp \
     main.cpp
 
 HEADERS += \
     AddBoardDialog.h \
     AddPackageDialog.h \
+    Device.h \
+    DeviceBroadcaster.h \
     Git.h \
     RepositoryBookmark.h \
+    Settings.h \
     mainwindow.h
 
 FORMS += \

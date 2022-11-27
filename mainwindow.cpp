@@ -4,6 +4,7 @@
 #include "AddBoardDialog.h"
 #include "Git.h"
 #include "RepositoryBookmark.h"
+#include "DeviceBroadcaster.h"
 
 static QString bookmark = "/home/wwd/.config/board-manager/bookmarks.xml";
 
@@ -11,6 +12,7 @@ struct MainWindow::Private {
     QList<RepositoryData> repos;
     RepositoryData current_repo;
     Git::Branch current_branch;
+    DeviceBroadcaster* broadcaster;
 };
 
 MainWindow::MainWindow(QWidget *parent)
@@ -28,8 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
     setMinimumWidth(1280);
     setCentralWidget(boardDock);
     setWindowTitle(tr("Board-Manager"));
-
     updatePackageList();
+    
+    m->broadcaster = new DeviceBroadcaster(this);
+    m->broadcaster->start();
 }
 
 const QList<RepositoryData> &MainWindow::getRepos() const

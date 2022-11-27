@@ -4,7 +4,7 @@
 #include <QDialog>
 #include "ui_AddRepositoryDialog.h"
 
-class AddPackageDialog : public QDialog, public Ui::AddRepositoryDialog
+class AddPackageDialog : public QDialog, public Ui::AddPackageDialog
 {
     Q_OBJECT
 public:
